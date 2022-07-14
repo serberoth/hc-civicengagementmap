@@ -7,4 +7,5 @@
 !.yarn/versions
 yarn-error.log
 entities.csv
-
+entities.xlsx
+errors.txt

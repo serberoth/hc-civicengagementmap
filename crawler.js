@@ -16,7 +16,6 @@ function escapeForCSV(str) { return `"${str.split('"').join('""')}"` }
 
 
 async function readFeature(uri, debug) {
-    // console.error(uri);
     try {
         const { data } = await axios.get(uri);
 
@@ -35,7 +34,6 @@ async function readFeature(uri, debug) {
         let entityUri = "";
         if (anchor === undefined || anchor === null) {
             console.error(`MISSING ENTITY URL: ${uri}`);
-            // console.error(divs[1].textContent);
         } else {
             entityUri = anchor.href;
         }
@@ -48,7 +46,7 @@ async function readFeature(uri, debug) {
                 desc.push(content);
             }
         }
-        desc = desc.join('\n');
+        desc = desc.join('\n\n');
 
         // Pull the contact from the third anchor tag in the info-box div
         let mailto = divs[2].querySelector('a');
@@ -68,8 +66,7 @@ async function readFeature(uri, debug) {
         //     console.log(`Contact: ${entity.contact}`);
         // }
 
-        // console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${entity.desc.map(s => escapeForCSV(s)).join(',')}`);
-        console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${escapeForCSV(entity.desc)}`);
+        // console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${escapeForCSV(entity.desc)}`);
 
         return entity;
     } catch (error) {
@@ -80,14 +77,16 @@ async function readFeature(uri, debug) {
 const readFeatures = async() => {
     // Read a single feature to test out the scraping code before we spend time reading them all
     // return [ await readFeature('https://civicengagementmap.haverford.edu/item/healthpoint') ];
-    return await Promise.all(features.map(async f => { await readFeature(f.properties.popupcontent, true) }));
+    return await Promise.all(features.map(async f => { return await readFeature(f.properties.popupcontent, true); }));
 }
 
 
 
 readFeatures().then(entities => {
     // Write the entities out in comma separated format
-    entities.forEach(e => {
-        // console.log(`${escapeForCSV(e.uri)},${escapeForCSV(e.name)},${escapeForCSV(e.contact)},${e.desc.map(s => escapeForCSV(s)).join(',')}`);
+    // console.log(entities);
+    console.log('Organization,URL,Contact E-mail,Description');
+    entities.sort((a, b) => a.name.localeCompare(b.name)).forEach(e => {
+        console.log(`${escapeForCSV(e.name)},${escapeForCSV(e.uri)},${escapeForCSV(e.contact)},${escapeForCSV(e.desc)}`);
     });
 });
