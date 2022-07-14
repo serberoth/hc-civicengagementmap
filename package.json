@@ -1,0 +1,15 @@
+{
+  "name": "cem",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "crawler.js",
+  "license": "MIT",
+  "packageManager": "yarn@3.2.1",
+  "scripts": {
+    "go": "node crawler.js"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "jsdom": "^20.0.0"
+  }
+}
