@@ -59,14 +59,12 @@ async function readFeature(uri, debug) {
             uri: entityUri,
         };
 
-        // if (!!debug) {
-        //     console.log('---------- E N T I T Y ----------');
-        //     console.log(`Org Name: ${entity.name}  => ${entity.uri}`);
-        //     entity.desc.forEach(e => console.log(`Description: ${e}`));
-        //     console.log(`Contact: ${entity.contact}`);
-        // }
-
-        // console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${escapeForCSV(entity.desc)}`);
+        if (!!debug) {
+            console.log('---------- E N T I T Y ----------');
+            console.log(`Org Name: ${entity.name}  => ${entity.uri}`);
+            entity.desc.forEach(e => console.log(`Description: ${e}`));
+            console.log(`Contact: ${entity.contact}`);
+        }
 
         return entity;
     } catch (error) {
@@ -84,7 +82,6 @@ const readFeatures = async() => {
 
 readFeatures().then(entities => {
     // Write the entities out in comma separated format
-    // console.log(entities);
     console.log('Organization,URL,Contact E-mail,Description');
     entities.sort((a, b) => a.name.localeCompare(b.name)).forEach(e => {
         console.log(`${escapeForCSV(e.name)},${escapeForCSV(e.uri)},${escapeForCSV(e.contact)},${escapeForCSV(e.desc)}`);
