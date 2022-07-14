@@ -7,46 +7,58 @@ const JSDOM = jsdom.JSDOM;
 
 const features = entities.features;
 
+
+
 function isEmpty(str) { return str === undefined || str === null || str.match(/^\s*$/) !== null; }
 
-function escapeForCSV(str) { return `"${str.split('"').join('""')}` }
+function escapeForCSV(str) { return `"${str.split('"').join('""')}"` }
+
+
 
 async function readFeature(uri, debug) {
-    // if (uri === undefined || uri === null) { console.error("UNDEFINED OR NULL URI"); return; }
+    // console.error(uri);
     try {
         const { data } = await axios.get(uri);
 
         const dom = new JSDOM(data, {
-            // runScripts: "dangerously",
             runScripts: "outside-only",
             resources: "usable"
         });
         const { document } = dom.window;
 
-        // const divs = document.querySelectorAll("section#contact > div.container div.info-box");
-        const divs = document.querySelectorAll('div.info-box');
+        const divs = document.querySelectorAll("section#contact > div.container div.info-box");
         // Pull the entity name from the first info-box div
-        const entityName = divs[0].querySelector('h3').textContent;
+        let entityName = divs[0].querySelector('h3').textContent;
 
+        // Pull the entity URL from the descriptive content
+        let anchor = divs[1].querySelector('p a');
+        let entityUri = "";
+        if (anchor === undefined || anchor === null) {
+            console.error(`MISSING ENTITY URL: ${uri}`);
+            // console.error(divs[1].textContent);
+        } else {
+            entityUri = anchor.href;
+        }
         // Pull the descriptive text from the second info-box div
-        const paragraphs = divs[1].querySelectorAll('p');
-        var desc = [];
-        for (var i = 0; i < paragraphs.length - 1; ++i) {
-            const content = paragraphs[i].textContent;
+        let paragraphs = divs[1].querySelectorAll('p');
+        let desc = [];
+        for (let i = 0; i < paragraphs.length - 1; ++i) {
+            let content = paragraphs[i].textContent;
             if (!isEmpty(content)) {
                 desc.push(content);
             }
         }
+        desc = desc.join('\n');
 
         // Pull the contact from the third anchor tag in the info-box div
-        const mailto = divs[2].querySelector('a');
-        const contact = mailto.textContent;
+        let mailto = divs[2].querySelector('a');
+        let contact = mailto.textContent;
 
         let entity = {
-            uri: uri,
             name: entityName,
             desc: desc,
             contact: contact,
+            uri: entityUri,
         };
 
         // if (!!debug) {
@@ -55,7 +67,9 @@ async function readFeature(uri, debug) {
         //     entity.desc.forEach(e => console.log(`Description: ${e}`));
         //     console.log(`Contact: ${entity.contact}`);
         // }
-        console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.contact)},${entity.desc.map(s => escapeForCSV(s)).join(',')}`);
+
+        // console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${entity.desc.map(s => escapeForCSV(s)).join(',')}`);
+        console.log(`${escapeForCSV(entity.name)},${escapeForCSV(entity.uri)},${escapeForCSV(entity.contact)},${escapeForCSV(entity.desc)}`);
 
         return entity;
     } catch (error) {
@@ -74,7 +88,6 @@ const readFeatures = async() => {
 readFeatures().then(entities => {
     // Write the entities out in comma separated format
     entities.forEach(e => {
-        // console.log(e);
-        // console.log(`${e.name},${e.contact},${e.desc.join(',')}`);
+        // console.log(`${escapeForCSV(e.uri)},${escapeForCSV(e.name)},${escapeForCSV(e.contact)},${e.desc.map(s => escapeForCSV(s)).join(',')}`);
     });
 });
